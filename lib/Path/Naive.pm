@@ -19,24 +19,52 @@ our @EXPORT_OK = qw(
                );
 
 sub split_path {
+    die "Please specify path" unless defined($_[0]) && length($_[0]);
+    grep {length} split qr!/+!, $_[0];
 }
 
 sub normalize_path {
+    my @d0 = split_path $_[0];
+    my $abs = $_[0] =~ m!\A/!;
+    my @d;
+    while (@d0) {
+        my $d = shift @d0;
+        next if $d eq '.' && (@d || @d0 || $abs);
+        do { pop @d; next } if $d eq '..' &&
+            (@d>1 && $d[-1] ne '..' ||
+                 @d==1 && $d[-1] ne '..' && $d[-1] ne '.' && @d0 ||
+                     $abs);
+        push @d, $d;
+    }
+    ($abs ? "/" : "") . join("/", @d);
 }
 
 sub is_abs_path {
+    die "Please specify path" unless defined($_[0]) && length($_[0]);
+    $_[0] =~ m!\A/! ? 1:0;
 }
 
 sub is_rel_path {
+    die "Please specify path" unless defined($_[0]) && length($_[0]);
+    $_[0] =~ m!\A/! ? 0:1;
 }
 
 sub concat_path {
+    die "Please specify path1" unless defined($_[0]) && length($_[0]);
+    die "Please specify path2" unless defined($_[1]) && length($_[1]);
+    return $_[1] if $_[1] =~ m!\A/!;
+    $_[0] . ($_[0] =~ m!/\z! ? "" : "/") . $_[1];
 }
 
 sub concat_path_n {
+    normalize_path(concat_path(@_));
 }
 
 sub abs_path {
+    die "Please specify path" unless defined($_[0]) && length($_[0]);
+    die "Please specify base" unless defined($_[1]) && length($_[1]);
+    die "base must be absolute" unless is_abs_path($_[1]);
+    concat_path_n($_[1], $_[0]);
 }
 
 1;
@@ -49,16 +77,16 @@ sub abs_path {
      is_abs_path is_rel_path);
 
  # split path to directories
- $dirs = split_path("");              # dies, empty path
- $dirs = split_path("/");             # -> []
- $dirs = split_path("a");             # -> ["a"]
- $dirs = split_path("/a");            # -> ["a"]
- $dirs = split_path("/a/");           # -> ["a"]
- $dirs = split_path("../a");          # -> ["..", "a"]
- $dirs = split_path("./a");           # -> [".", "a"]
- $dirs = split_path("../../a");       # -> ["..", "..", "a"]
- $dirs = split_path(".././../a");     # -> ["..", ".", "..", "a"]
- $dirs = split_path("a/b/c..");       # -> ["a", "b", "c", ".."]
+ @dirs = split_path("");              # dies, empty path
+ @dirs = split_path("/");             # -> ()
+ @dirs = split_path("a");             # -> ("a")
+ @dirs = split_path("/a");            # -> ("a")
+ @dirs = split_path("/a/");           # -> ("a")
+ @dirs = split_path("../a");          # -> ("..", "a")
+ @dirs = split_path("./a");           # -> (".", "a")
+ @dirs = split_path("../../a");       # -> ("..", "..", "a")
+ @dirs = split_path(".././../a");     # -> ("..", ".", "..", "a")
+ @dirs = split_path("a/b/c/..");      # -> ("a", "b", "c", "..")
 
  # normalize path (collapse . & .., remove double & trailing / except on "/")
  say normalize_path("");              # dies, empty path
@@ -70,8 +98,8 @@ sub abs_path {
  say normalize_path("a/b/./");        # -> "a/b"
  say normalize_path("a/b/..");        # -> "a"
  say normalize_path("a/b/../");       # -> "a"
- say normalize_path("/a/./../b");     # -> "b"
- say normalize_path("/a/../../b");    # -> "b" (.. after hitting root is ok)
+ say normalize_path("/a/./../b");     # -> "/b"
+ say normalize_path("/a/../../b");    # -> "/b" (.. after hitting root is ok)
 
  # check whether path is absolute (starts from root)
  say is_abs_path("/");                # -> 1
@@ -89,19 +117,20 @@ sub abs_path {
  say concat_path("a", "b");           # -> "a/b"
  say concat_path("a/", "b");          # -> "a/b"
  say concat_path("a", "b/");          # -> "a/b/"
- say concat_path("a", "../b/");       # -> "/b/"
- say concat_path("a/b", ".././c");    # -> "a/./c"
- say concat_path("../", ".././c/");   # -> "../../c/"
+ say concat_path("a", "../b/");       # -> "a/../b/"
+ say concat_path("a/b", ".././c");    # -> "a/b/.././c"
+ say concat_path("../", ".././c/");   # -> "../.././c/"
+ say concat_path("a/b/c", "/d/e");    # -> "/d/e" (path2 is absolute)
 
  # this is just concat_path + normalize_path the result
  say concat_path_n("a", "b");         # -> "a/b"
  say concat_path_n("a/", "b");        # -> "a/b"
  say concat_path_n("a", "b/");        # -> "a/b"
- say concat_path_n("a", "../b/");     # -> "/b"
+ say concat_path_n("a", "../b/");     # -> "b"
  say concat_path_n("a/b", ".././c");  # -> "a/c"
  say concat_path_n("../", ".././c/"); # -> "../../c"
 
- # abs_path($path, $base) is equal to concat_path($base, $path). $base must be
+ # abs_path($path, $base) is equal to concat_path_n($base, $path). $base must be
  # absolute.
  say abs_path("a", "b");              # dies, $base is not absolute
  say abs_path("a", "/b");             # -> "/b/a"
@@ -126,7 +155,7 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head1 FUNCTIONS
 
-=head2 split_path($path) => ARRAY OF STR
+=head2 split_path($path) => LIST OF STR
 
 =head2 normalize_path($path) => STR
 
