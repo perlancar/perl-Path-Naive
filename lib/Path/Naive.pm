@@ -151,9 +151,9 @@ sub abs_path {
 =head1 DESCRIPTION
 
 This is yet another set of routines to manipulate abstract Unix-like paths.
-C<Abstract> means not tied to actual filesystem. B<Unix-like> means single-root
+B<Abstract> means not tied to actual filesystem. B<Unix-like> means single-root
 tree, with forward slash C</> as separator, and C<.> and C<..> to mean current-
-and parent directory. C<Naive> means not having the concept of symlinks, so
+and parent directory. B<Naive> means not having the concept of symlinks, so
 paths need not be traversed on a per-directory basis (see L<File::Spec::Unix>
 where it mentions the word "naive").
 
