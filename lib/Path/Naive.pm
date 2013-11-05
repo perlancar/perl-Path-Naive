@@ -50,10 +50,19 @@ sub is_rel_path {
 }
 
 sub concat_path {
-    die "Please specify path1" unless defined($_[0]) && length($_[0]);
-    die "Please specify path2" unless defined($_[1]) && length($_[1]);
-    return $_[1] if $_[1] =~ m!\A/!;
-    $_[0] . ($_[0] =~ m!/\z! ? "" : "/") . $_[1];
+    die "Please specify at least two paths" unless @_ > 1;
+    my $i = 0;
+    my $res = $_[0];
+    for (@_) {
+        die "Please specify path (#$i)" unless defined && length;
+        next unless $i++;
+        if (m!\A/!) {
+            $res = $_;
+        } else {
+            $res .= ($res =~ m!/\z! ? "" : "/") . $_;
+        }
+    }
+    $res;
 }
 
 sub concat_path_n {
@@ -163,9 +172,9 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head2 is_rel_path($path) => BOOL
 
-=head2 concat_path($path1, $path2) => STR
+=head2 concat_path($path1, $path2, ...) => STR
 
-=head2 concat_path_n($path1, $path2) => STR
+=head2 concat_path_n($path1, $path2, ...) => STR
 
 =head2 abs_path($path) => STR
 

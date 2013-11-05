@@ -96,6 +96,8 @@ subtest concat_path => sub {
     is(concat_path("a/b", ".././e")     , "a/b/.././e");
     is(concat_path("../", ".././c/")    , "../.././c/");
     is(concat_path("a/b/c", "/f/a")     , "/f/a");
+
+    is(concat_path("a", "/b", "g")      , "/b/g");
 };
 
 subtest concat_path_n => sub {
@@ -111,6 +113,7 @@ subtest concat_path_n => sub {
     is(concat_path_n("a/b/c", "/f/a")   , "/f/a");
 
     is(concat_path_n("a/b/c", "/f/a/")  , "/f/a");
+    is(concat_path_n("a", "/b", "g")    , "/b/g");
 };
 
 subtest abs_path => sub {
