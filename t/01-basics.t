@@ -63,6 +63,8 @@ subtest normalize_path => sub {
     is(normalize_path("p/a/./..")      , "p");
     is(normalize_path("a/../q")        , "q");
     is(normalize_path("a/../.")        , ".");
+
+    is_deeply([normalize_path("a/c/./")], ["a","c"]);
 };
 
 subtest is_abs_path => sub {
@@ -114,6 +116,8 @@ subtest concat_path_n => sub {
 
     is(concat_path_n("a/b/c", "/f/a/")  , "/f/a");
     is(concat_path_n("a", "/b", "g")    , "/b/g");
+
+    is_deeply([concat_path_n("a", "/b", "g")], ["b","g"]);
 };
 
 subtest abs_path => sub {
@@ -125,6 +129,8 @@ subtest abs_path => sub {
     is(abs_path(".", "/b")              , "/b");
     is(abs_path("a/c//..", "/b/")       , "/b/a");
     is(abs_path("/a", "/b/c")           , "/a");
+
+    is_deeply([abs_path("a/c//..", "/b/")], ["b","a"]);
 };
 
 DONE_TESTING:

@@ -36,7 +36,11 @@ sub normalize_path {
                      $abs);
         push @d, $d;
     }
-    ($abs ? "/" : "") . join("/", @d);
+    if (wantarray) {
+        @d;
+    } else {
+        ($abs ? "/" : "") . join("/", @d);
+    }
 }
 
 sub is_abs_path {
@@ -98,17 +102,21 @@ sub abs_path {
  @dirs = split_path("a/b/c/..");      # -> ("a", "b", "c", "..")
 
  # normalize path (collapse . & .., remove double & trailing / except on "/")
- say normalize_path("");              # dies, empty path
- say normalize_path("/");             # -> "/"
- say normalize_path("..");            # -> ".."
- say normalize_path("./");            # -> "."
- say normalize_path("//");            # -> "/"
- say normalize_path("a/b/.");         # -> "a/b"
- say normalize_path("a/b/./");        # -> "a/b"
- say normalize_path("a/b/..");        # -> "a"
- say normalize_path("a/b/../");       # -> "a"
- say normalize_path("/a/./../b");     # -> "/b"
- say normalize_path("/a/../../b");    # -> "/b" (.. after hitting root is ok)
+ $p = normalize_path("");              # dies, empty path
+ $p = normalize_path("/");             # -> "/"
+ $p = normalize_path("..");            # -> ".."
+ $p = normalize_path("./");            # -> "."
+ $p = normalize_path("//");            # -> "/"
+ $p = normalize_path("a/b/.");         # -> "a/b"
+ $p = normalize_path("a/b/./");        # -> "a/b"
+ $p = normalize_path("a/b/..");        # -> "a"
+ $p = normalize_path("a/b/../");       # -> "a"
+ $p = normalize_path("/a/./../b");     # -> "/b"
+ $p = normalize_path("/a/../../b");    # -> "/b" (.. after hitting root is ok)
+
+ # in list context, normalize_path returns list, this is useful to save you from
+ # having to split the normalized path yourself.
+ @p = normalize_path("a/b/./");        # -> ("a", "b")
 
  # check whether path is absolute (starts from root)
  say is_abs_path("/");                # -> 1
@@ -132,20 +140,22 @@ sub abs_path {
  say concat_path("a/b/c", "/d/e");    # -> "/d/e" (path2 is absolute)
 
  # this is just concat_path + normalize_path the result
- say concat_path_n("a", "b");         # -> "a/b"
- say concat_path_n("a/", "b");        # -> "a/b"
- say concat_path_n("a", "b/");        # -> "a/b"
- say concat_path_n("a", "../b/");     # -> "b"
- say concat_path_n("a/b", ".././c");  # -> "a/c"
- say concat_path_n("../", ".././c/"); # -> "../../c"
+ $p = concat_path_n("a", "b");         # -> "a/b"
+ $p = concat_path_n("a/", "b");        # -> "a/b"
+ $p = concat_path_n("a", "b/");        # -> "a/b"
+ $p = concat_path_n("a", "../b/");     # -> "b"
+ $p = concat_path_n("a/b", ".././c");  # -> "a/c"
+ $p = concat_path_n("../", ".././c/"); # -> "../../c"
+ @p = concat_path_n("../", ".././c/"); # -> ("..", "..", "c")
 
  # abs_path($path, $base) is equal to concat_path_n($base, $path). $base must be
  # absolute.
- say abs_path("a", "b");              # dies, $base is not absolute
- say abs_path("a", "/b");             # -> "/b/a"
- say abs_path(".", "/b");             # -> "/b"
- say abs_path("a/c/..", "/b/");       # -> "/b/a"
- say abs_path("/a", "/b/c");          # -> "/a"
+ $p = abs_path("a", "b");              # dies, $base is not absolute
+ $p = abs_path("a", "/b");             # -> "/b/a"
+ $p = abs_path(".", "/b");             # -> "/b"
+ $p = abs_path("a/c/..", "/b/");       # -> "/b/a"
+ $p = abs_path("/a", "/b/c");          # -> "/a"
+ @p = abs_path("a/c/..", "/b/");       # -> ("b", "a")
 
 
 =head1 DESCRIPTION
@@ -164,19 +174,19 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head1 FUNCTIONS
 
-=head2 split_path($path) => LIST OF STR
+=head2 split_path($path) => list
 
-=head2 normalize_path($path) => STR
+=head2 normalize_path($path) => str | list
 
-=head2 is_abs_path($path) => BOOL
+=head2 is_abs_path($path) => bool
 
-=head2 is_rel_path($path) => BOOL
+=head2 is_rel_path($path) => bool
 
 =head2 concat_path($path1, $path2, ...) => STR
 
-=head2 concat_path_n($path1, $path2, ...) => STR
+=head2 concat_path_n($path1, $path2, ...) => str | list
 
-=head2 abs_path($path) => STR
+=head2 abs_path($path) => str | list
 
 
 =head1 SEE ALSO
