@@ -1,3 +1,11 @@
+0.040   2020-02-05  Released-By: PERLANCAR; Urgency: low
+
+	- No functional changes.
+
+	- [doc] Note more prominently that concat_path_n and abs_path can
+	  return path elements in list context.
+
+
 0.03    2014-09-19  Released-By: PERLANCAR
 
 	- [Potentially incompatible change] Return list on list context for
