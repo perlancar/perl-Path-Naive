@@ -1,8 +1,10 @@
 #!perl
 
-use 5.010;
+use 5.010001;
 use strict;
 use warnings;
+use Test::Exception;
+use Test::More 0.98;
 
 use Path::Naive qw(
                        split_path
@@ -13,8 +15,6 @@ use Path::Naive qw(
                        concat_path_n
                        abs_path
               );
-use Test::Exception;
-use Test::More 0.98;
 
 subtest split_path => sub {
     dies_ok { split_path() };
@@ -100,6 +100,9 @@ subtest concat_path => sub {
     is(concat_path("a/b/c", "/f/a")     , "/f/a");
 
     is(concat_path("a", "/b", "g")      , "/b/g");
+
+    # test returning string even in list context
+    is_deeply([concat_path("a", "/b", "g")], ["/b/g"]);
 };
 
 subtest concat_path_n => sub {
@@ -117,6 +120,7 @@ subtest concat_path_n => sub {
     is(concat_path_n("a/b/c", "/f/a/")  , "/f/a");
     is(concat_path_n("a", "/b", "g")    , "/b/g");
 
+    # test list context
     is_deeply([concat_path_n("a", "/b", "g")], ["b","g"]);
 };
 
@@ -130,6 +134,7 @@ subtest abs_path => sub {
     is(abs_path("a/c//..", "/b/")       , "/b/a");
     is(abs_path("/a", "/b/c")           , "/a");
 
+    # test list context
     is_deeply([abs_path("a/c//..", "/b/")], ["b","a"]);
 };
 

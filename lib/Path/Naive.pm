@@ -101,7 +101,9 @@ sub abs_path {
  @dirs = split_path(".././../a");     # -> ("..", ".", "..", "a")
  @dirs = split_path("a/b/c/..");      # -> ("a", "b", "c", "..")
 
- # normalize path (collapse . & .., remove double & trailing / except on "/")
+ # normalize path (collapse . & .., remove double & trailing / except on "/").
+ # note that it can return path string (in scalar context) or path elements (in
+ # list context).
  $p = normalize_path("");              # dies, empty path
  $p = normalize_path("/");             # -> "/"
  $p = normalize_path("..");            # -> ".."
@@ -113,10 +115,7 @@ sub abs_path {
  $p = normalize_path("a/b/../");       # -> "a"
  $p = normalize_path("/a/./../b");     # -> "/b"
  $p = normalize_path("/a/../../b");    # -> "/b" (.. after hitting root is ok)
-
- # in list context, normalize_path returns list, this is useful to save you from
- # having to split the normalized path yourself.
- @p = normalize_path("a/b/./");        # -> ("a", "b")
+ @p = normalize_path("a/b/./");        # -> ("a", "b") # convenient, you don't have to split_path() separately.
 
  # check whether path is absolute (starts from root)
  say is_abs_path("/");                # -> 1
@@ -130,7 +129,7 @@ sub abs_path {
  say is_rel_path("/");                # -> 0
  say is_rel_path("a/b");              # -> 1
 
- # concatenate two paths
+ # concatenate two paths. always return path string.
  say concat_path("a", "b");           # -> "a/b"
  say concat_path("a/", "b");          # -> "a/b"
  say concat_path("a", "b/");          # -> "a/b/"
