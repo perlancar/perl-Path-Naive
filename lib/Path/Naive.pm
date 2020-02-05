@@ -139,7 +139,8 @@ sub abs_path {
  say concat_path("../", ".././c/");   # -> "../.././c/"
  say concat_path("a/b/c", "/d/e");    # -> "/d/e" (path2 is absolute)
 
- # this is just concat_path + normalize_path the result
+ # this is just concat_path + normalize_path the result. note that it can return
+ # path string (in scalar context) or path elements (in list context).
  $p = concat_path_n("a", "b");         # -> "a/b"
  $p = concat_path_n("a/", "b");        # -> "a/b"
  $p = concat_path_n("a", "b/");        # -> "a/b"
@@ -149,7 +150,8 @@ sub abs_path {
  @p = concat_path_n("../", ".././c/"); # -> ("..", "..", "c")
 
  # abs_path($path, $base) is equal to concat_path_n($base, $path). $base must be
- # absolute.
+ # absolute. note that it can return path string (in scalar context) or path
+ # elements (in list context).
  $p = abs_path("a", "b");              # dies, $base is not absolute
  $p = abs_path("a", "/b");             # -> "/b/a"
  $p = abs_path(".", "/b");             # -> "/b"
@@ -182,7 +184,7 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head2 is_rel_path($path) => bool
 
-=head2 concat_path($path1, $path2, ...) => STR
+=head2 concat_path($path1, $path2, ...) => str
 
 =head2 concat_path_n($path1, $path2, ...) => str | list
 
