@@ -87,8 +87,6 @@ sub concat_and_normalize_path {
 1;
 # ABSTRACT: Yet another abstract, Unix-like path manipulation routines
 
-=for Pod::Coverage ^(split_path concat_path_n)$
-
 =head1 SYNOPSIS
 
  use Path::Naive qw(
@@ -183,13 +181,13 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head2 abs_path($path) => str
 
-=head2 concat_path_n($path1, $path2, ...) => str
+=head2 concat_and_normalize_path($path1, $path2, ...) => str
 
 =head2 concat_path($path1, $path2, ...) => str
 
-=head2 is_rel_path($path) => bool
-
 =head2 is_abs_path($path) => bool
+
+=head2 is_rel_path($path) => bool
 
 =head2 normalize_path($path) => str
 
