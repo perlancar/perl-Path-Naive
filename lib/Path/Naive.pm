@@ -105,6 +105,8 @@ sub concat_and_normalize_path {
  @dirs = split_path("a");             # -> ("a")
  @dirs = split_path("/a");            # -> ("a")
  @dirs = split_path("/a/");           # -> ("a")
+ @dirs = split_path("/a/b/c");        # -> ("a", "b", "c")
+ @dirs = split_path("/a//b////c//");  # -> ("a", "b", "c")
  @dirs = split_path("../a");          # -> ("..", "a")
  @dirs = split_path("./a");           # -> (".", "a")
  @dirs = split_path("../../a");       # -> ("..", "..", "a")
