@@ -12,18 +12,20 @@ use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
     abs_path
-    concat_path
     concat_and_normalize_path
+    concat_path
+    normalize_and_split_path
     normalize_path
     is_abs_path
     is_rel_path
+    rel_path
     split_path
 );
 
 sub abs_path {
     my ($path, $base) = @_;
 
-    die "Please specify path (first arg)" unless defined $path && length $path;
+    die "Please specify path (first arg)"  unless defined $path && length $path;
     die "Please specify base (second arg)" unless defined $base && length $base;
     die "base must be absolute" unless is_abs_path($base);
     concat_and_normalize_path($base, $path);
@@ -39,29 +41,6 @@ sub is_rel_path {
     my $path = shift;
     die "Please specify path" unless defined $path && length $path;
     $path =~ m!\A/! ? 0:1;
-}
-
-sub normalize_path {
-    my $path = shift;
-    my @elems0 = split_path($path);
-    my $is_abs = $path =~ m!\A/!;
-    my @elems;
-    while (@elems0) {
-        my $elem = shift @elems0;
-        next if $elem eq '.' && (@elems || @elems0 || $is_abs);
-        do { pop @elems; next } if $elem eq '..' &&
-            (@elems>1 && $elems[-1] ne '..' ||
-                 @elems==1 && $elems[-1] ne '..' && $elems[-1] ne '.' && @elems0 ||
-                     $is_abs);
-        push @elems, $elem;
-    }
-    ($is_abs ? "/" : "") . join("/", @elems);
-}
-
-sub split_path {
-    my $path = shift;
-    die "Please specify path" unless defined $path && length $path;
-    grep {length} split qr!/+!, $path;
 }
 
 sub concat_path {
@@ -84,6 +63,65 @@ sub concat_and_normalize_path {
     normalize_path(concat_path(@_));
 }
 
+my $_split;
+sub _normalize_path {
+    my $path = shift;
+    my @elems0 = split_path($path);
+    my $is_abs = $path =~ m!\A/!;
+    my @elems;
+    while (@elems0) {
+        my $elem = shift @elems0;
+        next if $elem eq '.' && (@elems || @elems0 || $is_abs);
+        do { pop @elems; next } if $elem eq '..' &&
+            (@elems>1 && $elems[-1] ne '..' ||
+                 @elems==1 && $elems[-1] ne '..' && $elems[-1] ne '.' && @elems0 ||
+                     $is_abs);
+        push @elems, $elem;
+    }
+    return @elems if $_split;
+    ($is_abs ? "/" : "") . join("/", @elems);
+}
+
+sub normalize_path {
+    $_split = 0;
+    goto &_normalize_path;
+}
+
+sub normalize_and_split_path {
+    $_split = 1;
+    goto &_normalize_path;
+}
+
+sub rel_path {
+    my ($path, $base) = @_;
+
+    die "Please specify path (first arg)"  unless defined $path && length $path;
+    die "Please specify base (second arg)" unless defined $base && length $base;
+    die "path must be absolute" unless is_abs_path($path);
+    die "base must be absolute" unless is_abs_path($base);
+    my @elems_path = normalize_and_split_path($path);
+    my @elems_base = normalize_and_split_path($base);
+
+    my $num_common_elems = 0;
+    for (0..$#elems_base) {
+        last unless @elems_path > $num_common_elems;
+        last unless
+            $elems_path[$num_common_elems] eq $elems_base[$num_common_elems];
+        $num_common_elems++;
+    }
+    my @elems;
+    push @elems, ".." for ($num_common_elems .. $#elems_base);
+    push @elems, @elems_path[$num_common_elems .. $#elems_path];
+    @elems = (".") unless @elems;
+    join("/", @elems);
+}
+
+sub split_path {
+    my $path = shift;
+    die "Please specify path" unless defined $path && length $path;
+    grep {length} split qr!/+!, $path;
+}
+
 1;
 # ABSTRACT: Yet another abstract, Unix-like path manipulation routines
 
@@ -93,9 +131,10 @@ sub concat_and_normalize_path {
      abs_path
      concat_path
      concat_and_normalize_path
-     normalize_path
      is_abs_path
      is_rel_path
+     normalize_path
+     rel_path
      split_path
 );
 
@@ -164,6 +203,12 @@ sub concat_and_normalize_path {
  $p = abs_path("a/c/..", "/b/");       # -> "/b/a"
  $p = abs_path("/a", "/b/c");          # -> "/a"
 
+ # rel_path($path, $base) makes $path relative. the opposite of abs_path().
+ $p = rel_path("a", "/b");             # dies, $path is not absolute
+ $p = rel_path("/a", "b");             # dies, $base is not absolute
+ $p = rel_path("/a", "/b");            # -> "../a"
+ $p = rel_path("/b/c/e", "/b/d/f");    # -> "../../c/e"
+
 
 =head1 DESCRIPTION
 
@@ -181,7 +226,7 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head1 FUNCTIONS
 
-=head2 abs_path($path) => str
+=head2 abs_path($path, $base) => str
 
 =head2 concat_and_normalize_path($path1, $path2, ...) => str
 
@@ -192,6 +237,8 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 =head2 is_rel_path($path) => bool
 
 =head2 normalize_path($path) => str
+
+=head2 rel_path($path, $base) => str
 
 =head2 split_path($path) => list
 
