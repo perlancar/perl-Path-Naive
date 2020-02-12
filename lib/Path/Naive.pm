@@ -236,6 +236,8 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head2 is_rel_path($path) => bool
 
+=head2 normalize_and_split_path($path) => list
+
 =head2 normalize_path($path) => str
 
 =head2 rel_path($path, $base) => str
