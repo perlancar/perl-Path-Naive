@@ -129,10 +129,11 @@ sub split_path {
 
  use Path::Naive qw(
      abs_path
-     concat_path
      concat_and_normalize_path
+     concat_path
      is_abs_path
      is_rel_path
+     normalize_and_split_path
      normalize_path
      rel_path
      split_path
@@ -238,9 +239,13 @@ are used: Config::Tree, L<Riap> (L<App::riap>).
 
 =head2 normalize_and_split_path($path) => list
 
+Added in v0.043.
+
 =head2 normalize_path($path) => str
 
 =head2 rel_path($path, $base) => str
+
+Added in v0.043.
 
 =head2 split_path($path) => list
 
