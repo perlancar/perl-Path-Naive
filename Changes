@@ -5,7 +5,7 @@
 	- [doc] Show example of split_path() splitting on multiple /'s.
 
 
-0.042   2020-02-07  Released-By: PERLANCAR; Urgency: medium; Backward-Compatible: no
+0.042   2020-02-07  Released-By: PERLANCAR; Urgency: medium; Backward-Incompatible: yes
 
 	[Incompatible changes]
 

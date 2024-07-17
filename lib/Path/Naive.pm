@@ -1,15 +1,15 @@
 package Path::Naive;
 
+use strict;
+use warnings;
+
+use Exporter qw(import);
+
 # AUTHORITY
 # DATE
 # DIST
 # VERSION
 
-use strict;
-use warnings;
-
-use Exporter;
-our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
     abs_path
     concat_and_normalize_path
